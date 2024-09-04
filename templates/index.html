@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #chatbox {
+            width: 60%; /* Increased width */
+            max-width: 800px;
+            min-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+
+        #chat-header {
+            background-color: #6a0dad;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        #chat-log {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        .bot-message, .user-message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            clear: both;
+            display: inline-block;
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+        }
+
+        .bot-message {
+            background-color: #e0e0e0;
+            color: #333;
+            float: left;
+        }
+
+        .user-message {
+            background-color: #6a0dad;
+            color: #ffffff;
+            float: right;
+        }
+
+        #input-area {
+            display: flex;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+            background-color: #ffffff;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #6a0dad;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #5a0c8b;
+        }
+
+        #options-select {
+            flex: 1;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            display: none;
+            height: auto;
+            min-height: 100px;
+        }
+
+        /* Clear float */
+        .bot-message::after, .user-message::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="chatbox">
+        <div id="chat-header">Discovery Chatbot</div>
+        <div id="chat-log"></div>
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Enter a message..." />
+            <select id="options-select" multiple></select>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestionId = 0;
+        let isMultiple = false;  // Flag to determine if multiple selections are allowed
+
+        // Function to fetch the next question from the server
+        function fetchNextQuestion() {
+            fetch('/get_next_question', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ current_question_id: currentQuestionId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the bot message
+                if (data.error) {
+                    document.getElementById('chat-log').innerHTML += `<p class="bot-message">Bot: ${data.question}</p>`;
+                } else {
+                    document.getElementById('chat-log').innerHTML += `<p class="bot-message">Bot: ${data.question}</p>`;
+                    currentQuestionId = data.question_id;
+                    isMultiple = data.multiple || false;  // Check if multiple selection is allowed
+                }
+
+                // Check if there are options to display in a dropdown
+                if (data.options) {
+                    document.getElementById('user-input').style.display = 'none';
+                    let select = document.getElementById('options-select');
+                    select.style.display = 'block';
+                    select.innerHTML = ''; // Clear previous options
+                    data.options.forEach(option => {
+                        let opt = document.createElement('option');
+                        opt.value = option;
+                        opt.text = option;
+                        select.appendChild(opt);
+                    });
+                } else {
+                    document.getElementById('options-select').style.display = 'none';
+                    document.getElementById('user-input').style.display = 'block';
+                }
+
+                // Check if auto-advance is needed
+                if (data.auto_advance) {
+                    setTimeout(fetchNextQuestion, 500); // Automatically fetch next question after 0.5 second
+                }
+
+                // If end of conversation, disable input
+                if (currentQuestionId == 17) {
+                    document.getElementById('user-input').disabled = true;
+                    document.getElementById('options-select').disabled = true;
+                    document.getElementById('user-input').value = '';
+                }
+
+                // Scroll chat log to bottom
+                document.getElementById('chat-log').scrollTop = document.getElementById('chat-log').scrollHeight;
+            });
+        }
+
+        // Function to send the user's response to the server
+        function sendMessage() {
+            let userInput;
+
+            if (document.getElementById('options-select').style.display === 'block') {
+                let selectElement = document.getElementById('options-select');
+                if (isMultiple) {
+                    let selectedOptions = Array.from(selectElement.selectedOptions).map(option => option.value);
+                    userInput = selectedOptions.join(', '); // Join selected options with comma
+                } else {
+                    userInput = selectElement.value;
+                }
+
+                // Clear selected options and hide dropdown
+                selectElement.style.display = 'none';
+                document.getElementById('user-input').style.display = 'block';
+
+                // Clear selected options
+                selectElement.selectedIndex = -1;
+            } else {
+                userInput = document.getElementById('user-input').value;
+            }
+
+            // Prevent sending if input is empty
+            if (!userInput.trim()) {
+                // alert("Please enter a response before sending.");
+                return;
+            }
+
+            // Display the user's message
+            document.getElementById('chat-log').innerHTML += `<p class="user-message"> ${userInput}</p>`;
+            
+            // Clear the input box
+            document.getElementById('user-input').value = '';
+
+            // Send the response to the server
+            fetch('/save_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question_id: currentQuestionId, response: userInput }),
+            })
+            .then(() => {
+                fetchNextQuestion();
+            });
+
+            // Scroll chat log to bottom
+            document.getElementById('chat-log').scrollTop = document.getElementById('chat-log').scrollHeight;
+        }
+
+        // Add event listener for the Enter key to send message
+        document.getElementById('user-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+                e.preventDefault(); // Prevent the default action to avoid submitting a form
+            }
+        });
+
+        // Initialize the chat with the first question
+        fetchNextQuestion();
+    </script>
+</body>
+</html>
