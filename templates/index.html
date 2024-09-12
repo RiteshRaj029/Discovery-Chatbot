@@ -25,7 +25,7 @@
         }
 
         #chat-header {
-            background-color: #6a0dad;
+            background-color: #005792;
             color: white;
             padding: 15px;
             text-align: center;
@@ -57,7 +57,7 @@
         }
 
         .user-message {
-            background-color: #6a0dad;
+            background-color: #005792;
             color: #ffffff;
             float: right;
         }
@@ -79,7 +79,7 @@
 
         button {
             padding: 10px 20px;
-            background-color: #6a0dad;
+            background-color: #005792;
             color: white;
             border: none;
             border-radius: 20px;
@@ -88,7 +88,7 @@
         }
 
         button:hover {
-            background-color: #5a0c8b;
+            background-color: #00204a;
         }
 
         #options-select {
@@ -140,6 +140,7 @@
                 // Display the bot message
                 if (data.error) {
                     document.getElementById('chat-log').innerHTML += `<p class="bot-message">Bot: ${data.question}</p>`;
+
                 } else {
                     document.getElementById('chat-log').innerHTML += `<p class="bot-message">Bot: ${data.question}</p>`;
                     currentQuestionId = data.question_id;
@@ -221,7 +222,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ question_id: currentQuestionId, response: userInput }),
+                body: JSON.stringify({ question_id: currentQuestionId, response: userInput}),
             })
             .then(() => {
                 fetchNextQuestion();

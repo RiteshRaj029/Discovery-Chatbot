@@ -5,27 +5,25 @@ app = Flask(__name__)
 
 # Define the questions as per the journey map
 questions = [
-    {"id": 1, "question": "What is your first name?", "type": "text", "key": "name"},
-    {"id": 2, "question": "What is your Business Unit or Department name?", "type": "text", "key": "department"},
-    {"id": 3, "question": "Do you work for a specific area within your business unit/department?", "type": "boolean", "key": "specificArea"},
-    {"id": 4, "question": "What is the name of the area?", "depends_on": 3, "expected_answer": "yes", "key": "areaName"},
-    {"id": 5, "question": "Now, I would like to capture some information about the process you would like to automate.", "type": "message"},
-    {"id": 6, "question": "What is the name of the process?", "type": "text", "key": "process"},
-    {"id": 7, "question": "How often do you complete the process?", "options": ["Daily", "Weekly", "Monthly", "Bi-Monthly", "Quarterly", "Yearly"], "multiple": True, "key": "processDuration"},
-    {"id": 8, "question": "What is the volume per selected frequency?", "type": "text", "key": "frequency"},
-    {"id": 9, "question": "What is the goal for automation?", "options": ["Cost", "Quality", "Productivity", "Employee Satisfaction", "Customer Satisfaction/Experience", "Operational Efficiency", "Accuracy and Compliance", "Scalability", "Innovation"], "multiple": True, "key": "goal"},
-    {"id": 10, "question": "Is the process documented?", "type": "boolean", "key": "documented"},
-    {"id": 11, "question": "To what extent does your task rely on established rules?", "options": ["Not at all rule-based", "Slightly rule-based", "Moderately rule-based", "Very rule-based", "Extremely rule-based"], "key": "rules"},
-    {"id": 12, "question": "How structured is the data you work with?", "options": ["Unorganized and lacks predefined format or structure", "Slightly structured (i.e., Spreadsheets)", "Moderately Structured (i.e., Spreadsheets)", "Very Structured (Database tables)"], "key": "dataStructure"},
-    {"id": 13, "question": "Is the process expected to change in the next six (6) months to a year?", "type": "boolean", "key": "processChange"},
-    {"id": 14, "question": "What are the applications used to complete the process?", "type": "text", "key": "application"},
-    {"id": 15, "question": "Are there any expected changes or upgrades in the application(s) within the next 6 months to a year?", "type": "boolean", "key": "applicationUpgrade"}
+    {"id": 1.5, "question": "What is your first name?", "type": "text", "key": "name"},
+    {"id": 3, "question": "What is your Business Unit or Department name?", "type": "text", "key": "department"},
+    {"id": 4, "question": "Do you work for a specific area within your business unit/department?", "type": "boolean", "key": "specificArea"},
+    {"id": 5, "question": "What is the name of the area?", "depends_on": 3, "expected_answer": "yes", "key": "areaName"},
+    {"id": 7, "question": "What is the name of the process?", "type": "text", "key": "process"},
+    {"id": 8, "question": "How often do you complete the process?", "options": ["Daily", "Weekly", "Monthly", "Bi-Monthly", "Quarterly", "Yearly"], "multiple": True, "key": "processDuration"},
+    {"id": 9, "question": "What is the volume per selected frequency?", "type": "text", "key": "frequency"},
+    {"id": 10, "question": "What is the goal for automation?", "options": ["Cost", "Quality", "Productivity", "Employee Satisfaction", "Customer Satisfaction/Experience", "Operational Efficiency", "Accuracy and Compliance", "Scalability", "Innovation"], "multiple": True, "key": "goal"},
+    {"id": 11, "question": "Is the process documented?", "type": "boolean", "key": "documented"},
+    {"id": 12, "question": "To what extent does your task rely on established rules?", "options": ["Not at all rule-based", "Slightly rule-based", "Moderately rule-based", "Very rule-based", "Extremely rule-based"], "key": "rules"},
+    {"id": 13, "question": "How structured is the data you work with?", "options": ["Unorganized and lacks predefined format or structure", "Slightly structured (i.e., Spreadsheets)", "Moderately Structured (i.e., Spreadsheets)", "Very Structured (Database tables)"], "key": "dataStructure"},
+    {"id": 14, "question": "Is the process expected to change in the next six (6) months to a year?", "type": "boolean", "key": "processChange"},
+    {"id": 15, "question": "What are the applications used to complete the process?", "type": "text", "key": "application"},
+    {"id": 16, "question": "Are there any expected changes or upgrades in the application(s) within the next 6 months to a year?", "type": "boolean", "key": "applicationUpgrade"}
 ]
 
 
 responses = {}
 user_name = None
-response_counter = 1
 
 # Home page route
 @app.route('/')
@@ -45,7 +43,7 @@ def get_next_question():
         return jsonify({"question": "What is your first name?", "question_id": 1.5})
     
     if current_question_id == 1.5:
-        user_name = responses.get(1, "")
+        user_name = responses.get("What is your first name?", "")
         return jsonify({"question": f"Hi {user_name}!", "question_id": 2, "auto_advance": True})
     
     if current_question_id == 2:
@@ -55,8 +53,12 @@ def get_next_question():
         return jsonify({"question": "Do you work for a specific area within your business unit/department? (Please type 'yes' or 'no')", "question_id": 4})
     
     if current_question_id == 4:
-        response_to_q3 = responses.get(4, "").lower()
+        response_to_q3 = responses.get("Do you work for a specific area within your business unit/department?", "").lower()
+        # Check if the response is valid
         if response_to_q3 not in ["yes", "no"]:
+            # Remove the incorrect response
+            if 4 in responses:
+                del responses["Do you work for a specific area within your business unit/department?"]  # Delete incorrect response
             return jsonify({"question": "Invalid response. Please type 'yes' or 'no'.", "question_id": 3, "error": True})
         elif response_to_q3 == "yes":
             return jsonify({"question": "What is the name of the area?", "question_id": 5})
@@ -112,8 +114,12 @@ def save_response():
     if isinstance(response, str) and ',' in response:
         response = response.split(',')
     
-    responses[response_counter] = response
-    response_counter += 1
+    for item in questions:
+        if item["id"] == question_id:
+            question = item["question"]
+            responses[question] = response
+
+    # responses[question_id] = response  # Save the response using question_id as the key
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':

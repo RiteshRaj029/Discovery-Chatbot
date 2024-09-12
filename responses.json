@@ -1,23 +1,23 @@
 {
-    "1": "ritesh",
-    "2": "sd",
-    "3": "jj",
-    "4": "yes",
-    "5": "ss",
-    "6": "ss",
-    "7": [
+    "What is your first name?": "yash",
+    "What is your Business Unit or Department name?": "software developement",
+    "Do you work for a specific area within your business unit/department?": "yes",
+    "What is the name of the area?": "generative ai",
+    "Now, I would like to capture some information about the process you would like to automate.": "generative ai",
+    "What is the name of the process?": "attendance",
+    "How often do you complete the process?": [
         "Daily",
         " Weekly"
     ],
-    "8": "123",
-    "9": "Productivity",
-    "10": "yes",
-    "11": "Moderately rule-based",
-    "12": [
-        "Slightly structured (i.e.",
-        " Spreadsheets)"
+    "What is the volume per selected frequency?": "1500",
+    "What is the goal for automation?": [
+        "Productivity",
+        " Employee Satisfaction"
     ],
-    "13": "yes",
-    "14": "qandle",
-    "15": "yes"
+    "Is the process documented?": "yes",
+    "To what extent does your task rely on established rules?": "Slightly rule-based",
+    "How structured is the data you work with?": "Very Structured (Database tables)",
+    "Is the process expected to change in the next six (6) months to a year?": "yes",
+    "What are the applications used to complete the process?": "qandle",
+    "Are there any expected changes or upgrades in the application(s) within the next 6 months to a year?": "yes"
 }
